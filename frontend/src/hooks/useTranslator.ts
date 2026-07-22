@@ -19,7 +19,7 @@ export function useTranslator() {
   useEffect(() => {
     setHistory(loadHistory());
     setFavorites(loadFavorites());
-    void getLanguages().then((items) => setLanguages([{ code: 'auto', name: 'Auto Detect' }, ...items]));
+    void getLanguages().then((items: any[]) => setLanguages([{ code: 'auto', name: 'Auto Detect' }, ...items]));
   }, []);
 
   useEffect(() => {
@@ -41,7 +41,7 @@ export function useTranslator() {
     speechRecognition.interimResults = true;
     speechRecognition.onresult = (event: SpeechRecognitionEvent) => {
       const transcript = Array.from(event.results)
-        .map((result) => result[0]?.transcript ?? '')
+        .map((result: SpeechRecognitionResult) => result[0]?.transcript ?? '')
         .join(' ');
       setInput(transcript);
     };
@@ -73,7 +73,7 @@ export function useTranslator() {
     setError('');
 
     try {
-      const data = await translateText({ text, source, target });
+      const data = await translateText(text, source, target);
       setOutput(data.translatedText);
       const item: SavedItem = {
         id: `${Date.now()}`,
