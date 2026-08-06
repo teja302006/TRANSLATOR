@@ -1,5 +1,7 @@
+from pathlib import Path
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from .config import settings
 from .models import LanguageOption, TranslationRequest, TranslationResponse
@@ -47,3 +49,9 @@ def list_languages() -> list[LanguageOption]:
 def translate(request: TranslationRequest) -> TranslationResponse:
     output = provider.translate(request.text, request.source, request.target)
     return TranslationResponse(translatedText=output)
+
+
+# Serve React frontend built static files
+FRONTEND_DIR = Path(__file__).resolve().parent.parent.parent / "frontend" / "dist"
+if FRONTEND_DIR.exists():
+    app.mount("/", StaticFiles(directory=str(FRONTEND_DIR), html=True), name="static")

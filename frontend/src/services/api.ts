@@ -1,6 +1,4 @@
-const API_BASE_URL =
-  import.meta.env.VITE_API_URL ||
-  "https://translator-backend-5wvm.onrender.com/api";
+const API_BASE_URL = "/api";
 
 export interface TranslationResponse {
   translatedText: string;

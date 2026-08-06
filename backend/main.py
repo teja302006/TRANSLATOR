@@ -1,15 +1,13 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
+from deep_translator import GoogleTranslator
 
 app = FastAPI(
     title="Lingua AI API",
     version="1.0.0"
 )
 
-# -----------------------------
-# CORS
-# -----------------------------
 origins = [
     "https://translator-xi-eight.vercel.app",
     "http://localhost:5173",
@@ -23,35 +21,19 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# -----------------------------
-# Models
-# -----------------------------
 class TranslationRequest(BaseModel):
     text: str
     source: str
     target: str
 
-# -----------------------------
-# Root
-# -----------------------------
 @app.get("/")
 def root():
-    return {
-        "message": "Lingua AI Backend Running"
-    }
+    return {"message": "Lingua AI Backend Running"}
 
-# -----------------------------
-# Health
-# -----------------------------
 @app.get("/health")
 def health():
-    return {
-        "status": "healthy"
-    }
+    return {"status": "healthy"}
 
-# -----------------------------
-# Languages
-# -----------------------------
 @app.get("/api/languages")
 def languages():
     return [
@@ -69,11 +51,21 @@ def languages():
         {"code":"zh","name":"Chinese"}
     ]
 
-# -----------------------------
-# Translate
-# -----------------------------
 @app.post("/api/translate")
 def translate(request: TranslationRequest):
-    return {
-        "translatedText": f"[{request.target.upper()}] {request.text}"
-    }
+    try:
+        source = "auto" if request.source == "auto" else request.source
+
+        translated = GoogleTranslator(
+            source=source,
+            target=request.target
+        ).translate(request.text)
+
+        return {
+            "translatedText": translated
+        }
+
+    except Exception as e:
+        return {
+            "translatedText": f"Translation Error: {str(e)}"
+        }
