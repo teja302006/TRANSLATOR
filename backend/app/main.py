@@ -3,9 +3,14 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from .config import settings
-from .models import LanguageOption, TranslationRequest, TranslationResponse
-from .translate import build_provider
+try:
+    from .config import settings
+    from .models import LanguageOption, TranslationRequest, TranslationResponse
+    from .translate import build_provider
+except ImportError:
+    from config import settings
+    from models import LanguageOption, TranslationRequest, TranslationResponse
+    from translate import build_provider
 
 app = FastAPI(title=settings.app_name)
 
@@ -39,16 +44,28 @@ SUPPORTED_LANGUAGES = [
 def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
+@app.get(f"{settings.api_prefix}/health")
+def health_check_prefix() -> dict[str, str]:
+    return health_check()
+
 
 @app.get(f"{settings.api_prefix}/languages")
 def list_languages() -> list[LanguageOption]:
     return SUPPORTED_LANGUAGES
+
+@app.get("/languages")
+def list_languages_no_prefix() -> list[LanguageOption]:
+    return list_languages()
 
 
 @app.post(f"{settings.api_prefix}/translate", response_model=TranslationResponse)
 def translate(request: TranslationRequest) -> TranslationResponse:
     output = provider.translate(request.text, request.source, request.target)
     return TranslationResponse(translatedText=output)
+
+@app.post("/translate", response_model=TranslationResponse)
+def translate_no_prefix(request: TranslationRequest) -> TranslationResponse:
+    return translate(request)
 
 
 # Serve React frontend built static files
